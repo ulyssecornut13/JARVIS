@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<!-- saved from url=(0060)file:///Users/ulyssecornut/Downloads/jarvis_dashboard_1.html -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS — Dashboard Ulysse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./JARVIS — Dashboard Ulysse_files/css2" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --accent: #7c6af7;
+    --accent2: #4fd1c5;
+    --accent3: #f6ad55;
+    --danger: #fc8181;
+    --success: #68d391;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Outfit', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; }
+
+  .layout { display: grid; grid-template-columns: 280px 1fr; grid-template-rows: 60px 1fr; height: 100vh; }
+
+  /* TOPBAR */
+  .topbar {
+    grid-column: 1 / -1;
+    background: var(--bg2);
+    border-bottom: 0.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+  .topbar-logo { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 4px; }
+  .topbar-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); letter-spacing: 2px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .status-pill { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--success); font-family: var(--mono); letter-spacing: 1px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .date-display { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 0.5px solid var(--border2);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 8px 20px 4px; font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; margin-top: 16px; }
+  .sidebar-section:first-child { margin-top: 0; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px; cursor: pointer;
+    font-size: 13px; color: var(--muted);
+    transition: all 0.15s; border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(124,106,247,0.08); }
+  .nav-item .icon { font-size: 14px; width: 16px; text-align: center; }
+
+  /* RACES */
+  .race-item { padding: 10px 20px; }
+  .race-name { font-size: 12px; color: var(--text); font-weight: 500; margin-bottom: 4px; }
+  .race-date { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; }
+  .race-bar-bg { height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .race-bar { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .race-days { font-size: 10px; font-family: var(--mono); margin-top: 4px; }
+
+  /* MAIN */
+  .main { overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* CARDS */
+  .card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card-title { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+
+  /* STATS GRID */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat-card { background: var(--bg3); border-radius: 10px; padding: 16px; border: 0.5px solid var(--border); }
+  .stat-label { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; margin-bottom: 8px; }
+  .stat-value { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+  .stat-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .c-purple { color: var(--accent); }
+  .c-teal { color: var(--accent2); }
+  .c-amber { color: var(--accent3); }
+  .c-green { color: var(--success); }
+  .c-red { color: var(--danger); }
+
+  /* CHAT */
+  .chat-container { display: flex; flex-direction: column; height: 460px; }
+  .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px; margin-bottom: 16px; }
+  .chat-messages::-webkit-scrollbar { width: 3px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .msg { display: flex; gap: 10px; align-items: flex-start; }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
+  .msg.jarvis .msg-avatar { background: rgba(124,106,247,0.2); color: var(--accent); border: 0.5px solid rgba(124,106,247,0.3); }
+  .msg.user .msg-avatar { background: rgba(79,209,197,0.15); color: var(--accent2); border: 0.5px solid rgba(79,209,197,0.3); }
+  .msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 10px; font-size: 13px; line-height: 1.65; }
+  .msg.jarvis .msg-bubble { background: var(--bg3); color: var(--text); border: 0.5px solid var(--border2); }
+  .msg.user .msg-bubble { background: rgba(79,209,197,0.1); color: var(--text); border: 0.5px solid rgba(79,209,197,0.2); }
+  .msg-bubble p { margin-bottom: 6px; }
+  .msg-bubble p:last-child { margin-bottom: 0; }
+  .msg-bubble strong { color: var(--accent2); font-weight: 500; }
+
+  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input { flex: 1; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: var(--sans); font-size: 13px; resize: none; min-height: 42px; max-height: 100px; }
+  .chat-input:focus { outline: none; border-color: rgba(124,106,247,0.5); }
+  .chat-input::placeholder { color: var(--muted); }
+  .send-btn { background: var(--accent); border: none; border-radius: 8px; width: 42px; height: 42px; cursor: pointer; color: white; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.15s; }
+  .send-btn:hover { opacity: 0.85; }
+  .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .quick-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .qa-btn { font-size: 11px; padding: 5px 11px; border-radius: 20px; border: 0.5px solid var(--border2); background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: var(--mono); letter-spacing: 0.5px; }
+  .qa-btn:hover { color: var(--accent); border-color: rgba(124,106,247,0.4); background: rgba(124,106,247,0.08); }
+
+  /* TYPING */
+  .typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+  .typing-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+  /* PLANNING */
+  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .day-card { background: var(--bg3); border-radius: 8px; padding: 10px 8px; border: 0.5px solid var(--border); text-align: center; }
+  .day-card.today { border-color: rgba(124,106,247,0.5); background: rgba(124,106,247,0.08); }
+  .day-label { font-size: 9px; color: var(--muted); font-family: var(--mono); letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
+  .day-num { font-size: 16px; font-weight: 600; font-family: var(--mono); margin-bottom: 8px; }
+  .day-tag { font-size: 9px; padding: 3px 6px; border-radius: 4px; font-family: var(--mono); display: inline-block; }
+  .tag-run { background: rgba(252,129,129,0.15); color: var(--danger); }
+  .tag-velo { background: rgba(246,173,85,0.15); color: var(--accent3); }
+  .tag-renfo { background: rgba(104,211,145,0.15); color: var(--success); }
+  .tag-repos { background: rgba(107,107,128,0.15); color: var(--muted); }
+  .tag-natation { background: rgba(79,209,197,0.15); color: var(--accent2); }
+
+  /* GRID 2COL */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* NUTRITION */
+  .nutrition-score { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .score-circle { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .score-info { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .macro-bars { display: flex; flex-direction: column; gap: 8px; }
+  .macro-row { display: flex; align-items: center; gap: 10px; }
+  .macro-label { font-size: 10px; color: var(--muted); font-family: var(--mono); width: 70px; flex-shrink: 0; }
+  .macro-bar-bg { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .macro-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  .macro-val { font-size: 10px; font-family: var(--mono); color: var(--muted); width: 50px; text-align: right; flex-shrink: 0; }
+
+  .input-row { display: flex; gap: 8px; margin-top: 12px; }
+  .text-input { flex: 1; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: var(--sans); font-size: 12px; }
+  .text-input:focus { outline: none; border-color: rgba(124,106,247,0.5); }
+  .text-input::placeholder { color: var(--muted); }
+  .mini-btn { background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 8px; padding: 8px 14px; color: var(--muted); font-size: 11px; font-family: var(--mono); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .mini-btn:hover { color: var(--accent); border-color: rgba(124,106,247,0.4); }
+
+  /* SLEEP */
+  .sleep-display { display: flex; align-items: center; gap: 20px; }
+  .sleep-score { font-family: var(--mono); font-size: 48px; font-weight: 700; line-height: 1; }
+  .sleep-details { display: flex; flex-direction: column; gap: 6px; }
+  .sleep-row { font-size: 12px; color: var(--muted); }
+  .sleep-row span { color: var(--text); font-weight: 500; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; grid-template-rows: 60px auto 1fr; }
+    .sidebar { display: none; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .week-grid { grid-template-columns: repeat(4, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">JARVIS</div>
+    <div class="topbar-sub">// SYSTÈME PERSONNEL D'ULYSSE</div>
+    <div class="topbar-right">
+      <div class="status-pill"><div class="status-dot"></div>EN LIGNE</div>
+      <div class="date-display" id="topbar-date">JEUDI 14 MAI 2026</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <div class="nav-item active" onclick="showSection(&#39;dashboard&#39;)"><span class="icon">◈</span> Dashboard</div>
+    <div class="nav-item" onclick="showSection(&#39;chat&#39;)"><span class="icon">◎</span> Chat JARVIS</div>
+    <div class="nav-item" onclick="showSection(&#39;planning&#39;)"><span class="icon">▦</span> Planning</div>
+
+    <div class="sidebar-section">Objectifs course</div>
+    <div id="races-sidebar">
+      <div class="race-item">
+        <div class="race-name">T24 Île de Ré</div>
+        <div class="race-date">2026-06-13</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:96.25%;background:var(--danger);"></div></div>
+        <div class="race-days" style="color:var(--danger);">30J</div>
+      </div>
+      <div class="race-item">
+        <div class="race-name">20 km de Paris</div>
+        <div class="race-date">2026-10-11</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:81.25%;background:var(--accent3);"></div></div>
+        <div class="race-days" style="color:var(--accent3);">150J</div>
+      </div>
+      <div class="race-item">
+        <div class="race-name">Marathon de Paris</div>
+        <div class="race-date">2027-04-06</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:59.12500000000001%;background:var(--accent);"></div></div>
+        <div class="race-days" style="color:var(--accent);">327J</div>
+      </div>
+      <div class="race-item">
+        <div class="race-name">Half Ironman</div>
+        <div class="race-date">2027-07-07</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:47.625%;background:var(--accent2);"></div></div>
+        <div class="race-days" style="color:var(--accent2);">419J</div>
+      </div>
+      <div class="race-item">
+        <div class="race-name">Hyrox</div>
+        <div class="race-date">2028-05-01</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:10.25%;background:var(--success);"></div></div>
+        <div class="race-days" style="color:var(--success);">718J</div>
+      </div>
+      <div class="race-item">
+        <div class="race-name">Ironman</div>
+        <div class="race-date">2028-06-01</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:6.375%;background:var(--muted);"></div></div>
+        <div class="race-days" style="color:var(--muted);">749J</div>
+      </div></div>
+
+    <div class="sidebar-section">Profil</div>
+    <div class="nav-item"><span class="icon">◉</span> VO2 Max : 61</div>
+    <div class="nav-item"><span class="icon">◉</span> FTP : 195W</div>
+    <div class="nav-item"><span class="icon">◉</span> Semi : 1h22</div>
+    <div class="nav-item"><span class="icon">◉</span> 10 km : 37'00</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main-content">
+
+    <!-- SECTION DASHBOARD -->
+    <div id="section-dashboard">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Sommeil</div>
+          <div class="stat-value c-purple" id="stat-sleep">—</div>
+          <div class="stat-sub">Score Garmin</div>
+          <div class="input-row" style="margin-top:8px;">
+            <input class="text-input" id="sleep-input" placeholder="Ex: 78" style="font-family:var(--mono);">
+            <button class="mini-btn" onclick="updateSleep()">OK</button>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Motivation</div>
+          <div class="stat-value c-teal" id="stat-motivation">—</div>
+          <div class="stat-sub">/ 10</div>
+          <div class="input-row" style="margin-top:8px;">
+            <input class="text-input" id="motiv-input" placeholder="Ex: 8" style="font-family:var(--mono);">
+            <button class="mini-btn" onclick="updateMotiv()">OK</button>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Nutrition</div>
+          <div class="stat-value c-amber" id="stat-nutrition">—</div>
+          <div class="stat-sub">Note du jour / 10</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Prochaine course</div>
+          <div class="stat-value c-red" id="stat-next-race">30J</div>
+          <div class="stat-sub" id="stat-next-race-name">T24 Île de Ré</div>
+        </div>
+      </div>
+
+      <!-- RACES COUNTDOWN -->
+      <div class="card">
+        <div class="card-title">Countdown courses</div>
+        <div id="races-main" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--danger);flex-shrink:0;">30J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">T24 Île de Ré</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">2026-06-13</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:96.25%;background:var(--danger);"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent3);flex-shrink:0;">150J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">20 km de Paris</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">2026-10-11</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:81.25%;background:var(--accent3);"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);flex-shrink:0;">327J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Marathon de Paris</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">2027-04-06</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:59.12500000000001%;background:var(--accent);"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent2);flex-shrink:0;">419J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Half Ironman</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">2027-07-07</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:47.625%;background:var(--accent2);"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--success);flex-shrink:0;">718J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Hyrox</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">2028-05-01</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:10.25%;background:var(--success);"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:var(--muted);flex-shrink:0;">749J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Ironman</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">2028-06-01</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:6.375%;background:var(--muted);"></div></div>
+        </div>
+      </div></div>
+      </div>
+
+      <!-- GRID 2COL -->
+      <div class="grid-2">
+
+        <!-- NUTRITION -->
+        <div class="card">
+          <div class="card-title">Nutrition du jour</div>
+          <div class="nutrition-score">
+            <div class="score-circle" id="nutrition-circle">—</div>
+            <div class="score-info" id="nutrition-feedback">Entre ce que tu as mangé aujourd'hui pour obtenir une analyse.</div>
+          </div>
+          <div class="macro-bars">
+            <div class="macro-row">
+              <div class="macro-label">Protéines</div>
+              <div class="macro-bar-bg"><div class="macro-bar-fill" id="bar-prot" style="width:0%;background:var(--danger);"></div></div>
+              <div class="macro-val" id="val-prot">—</div>
+            </div>
+            <div class="macro-row">
+              <div class="macro-label">Glucides</div>
+              <div class="macro-bar-bg"><div class="macro-bar-fill" id="bar-carbs" style="width:0%;background:var(--accent3);"></div></div>
+              <div class="macro-val" id="val-carbs">—</div>
+            </div>
+            <div class="macro-row">
+              <div class="macro-label">Lipides</div>
+              <div class="macro-bar-bg"><div class="macro-bar-fill" id="bar-fat" style="width:0%;background:var(--accent2);"></div></div>
+              <div class="macro-val" id="val-fat">—</div>
+            </div>
+          </div>
+          <div class="input-row">
+            <input class="text-input" id="nutrition-input" placeholder="Ex: 2 oeufs, flocons avoine, banane...">
+            <button class="mini-btn" onclick="analyzeNutrition()">Analyser</button>
+          </div>
+        </div>
+
+        <!-- PLANNING SEMAINE -->
+        <div class="card">
+          <div class="card-title">Planning semaine</div>
+          <div class="week-grid" id="week-planning">
+      <div class="day-card ">
+        <div class="day-label">LUN</div>
+        <div class="day-num" style="">11</div>
+        <div class="day-tag tag-repos">Repos</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">MAR</div>
+        <div class="day-num" style="">12</div>
+        <div class="day-tag tag-run">Run Z2</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">MER</div>
+        <div class="day-num" style="">13</div>
+        <div class="day-tag tag-renfo">Renfo</div>
+      </div>
+      <div class="day-card today">
+        <div class="day-label">JEU</div>
+        <div class="day-num" style="color:var(--accent)">14</div>
+        <div class="day-tag tag-velo">Vélo seuil</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">VEN</div>
+        <div class="day-num" style="">15</div>
+        <div class="day-tag tag-run">Fractionné</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">SAM</div>
+        <div class="day-num" style="">16</div>
+        <div class="day-tag tag-natation">Natation</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">DIM</div>
+        <div class="day-num" style="">17</div>
+        <div class="day-tag tag-run">Sortie longue</div>
+      </div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION CHAT -->
+    <div id="section-chat" style="display:none;">
+      <div class="card" style="height:calc(100vh - 120px);">
+        <div class="card-title">Chat JARVIS</div>
+        <div class="chat-container" style="height:calc(100% - 40px);">
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="sendQuick(&#39;Brief matinal — donne moi mon résumé de la journée&#39;)">Brief matinal</button>
+            <button class="qa-btn" onclick="sendQuick(&#39;Propose moi une séance pour aujourd hui, je suis à Paris avec home trainer et haltères&#39;)">Séance du jour</button>
+            <button class="qa-btn" onclick="sendQuick(&#39;Où en est ma préparation pour le T24 Île de Ré ?&#39;)">Progression T24</button>
+            <button class="qa-btn" onclick="sendQuick(&#39;Donne moi un plan pour les 7 prochains jours&#39;)">Plan semaine</button>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="msg jarvis">
+              <div class="msg-avatar">JV</div>
+              <div class="msg-bubble"><p>Bonjour Ulysse. JARVIS en ligne. Semi en 1h22, 10 km en 37', VO2 max 61, FTP 195W. T24 Île de Ré dans 30 jours. Dis-moi comment tu vas aujourd'hui.</p></div>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="chat-input" placeholder="Parle à JARVIS..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendChatMessage()">↑</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION PLANNING -->
+    <div id="section-planning" style="display:none;">
+      <div class="card">
+        <div class="card-title">Planning détaillé</div>
+        <div class="week-grid" id="week-planning-full" style="grid-template-columns: repeat(7, 1fr); gap: 12px;">
+      <div class="day-card ">
+        <div class="day-label">LUN</div>
+        <div class="day-num" style="">11</div>
+        <div class="day-tag tag-repos">Repos</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">MAR</div>
+        <div class="day-num" style="">12</div>
+        <div class="day-tag tag-run">Run Z2</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">MER</div>
+        <div class="day-num" style="">13</div>
+        <div class="day-tag tag-renfo">Renfo</div>
+      </div>
+      <div class="day-card today">
+        <div class="day-label">JEU</div>
+        <div class="day-num" style="color:var(--accent)">14</div>
+        <div class="day-tag tag-velo">Vélo seuil</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">VEN</div>
+        <div class="day-num" style="">15</div>
+        <div class="day-tag tag-run">Fractionné</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">SAM</div>
+        <div class="day-num" style="">16</div>
+        <div class="day-tag tag-natation">Natation</div>
+      </div>
+      <div class="day-card ">
+        <div class="day-label">DIM</div>
+        <div class="day-num" style="">17</div>
+        <div class="day-tag tag-run">Sortie longue</div>
+      </div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = 'https://hook.eu1.make.com/223dykl23rum6uo1qpplfjhschtcvofh';
+
+const RACES = [
+  { name: 'T24 Île de Ré', date: '2026-06-13', color: 'var(--danger)' },
+  { name: '20 km de Paris', date: '2026-10-11', color: 'var(--accent3)' },
+  { name: 'Marathon de Paris', date: '2027-04-06', color: 'var(--accent)' },
+  { name: 'Half Ironman', date: '2027-07-07', color: 'var(--accent2)' },
+  { name: 'Hyrox', date: '2028-05-01', color: 'var(--success)' },
+  { name: 'Ironman', date: '2028-06-01', color: 'var(--muted)' },
+];
+
+const WEEK_PLAN = [
+  { tag: 'repos', label: 'Repos' },
+  { tag: 'run', label: 'Run Z2' },
+  { tag: 'renfo', label: 'Renfo' },
+  { tag: 'velo', label: 'Vélo seuil' },
+  { tag: 'run', label: 'Fractionné' },
+  { tag: 'natation', label: 'Natation' },
+  { tag: 'run', label: 'Sortie longue' },
+];
+
+function daysUntil(dateStr) {
+  const now = new Date();
+  const target = new Date(dateStr);
+  const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diff);
+}
+
+function initDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('topbar-date').textContent = now.toLocaleDateString('fr-FR', opts).toUpperCase();
+}
+
+function initRaces() {
+  const sidebar = document.getElementById('races-sidebar');
+  const main = document.getElementById('races-main');
+  sidebar.innerHTML = '';
+  main.innerHTML = '';
+
+  RACES.forEach((race, i) => {
+    const days = daysUntil(race.date);
+    const maxDays = 800;
+    const pct = Math.max(5, Math.min(100, ((maxDays - days) / maxDays) * 100));
+
+    sidebar.innerHTML += `
+      <div class="race-item">
+        <div class="race-name">${race.name}</div>
+        <div class="race-date">${race.date}</div>
+        <div class="race-bar-bg"><div class="race-bar" style="width:${pct}%;background:${race.color};"></div></div>
+        <div class="race-days" style="color:${race.color};">${days}J</div>
+      </div>`;
+
+    main.innerHTML += `
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:80px;font-family:var(--mono);font-size:20px;font-weight:700;color:${race.color};flex-shrink:0;">${days}J</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">${race.name}</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px;">${race.date}</div>
+          <div class="race-bar-bg"><div class="race-bar" style="width:${pct}%;background:${race.color};"></div></div>
+        </div>
+      </div>`;
+  });
+
+  const next = RACES.find(r => daysUntil(r.date) > 0);
+  if (next) {
+    document.getElementById('stat-next-race').textContent = daysUntil(next.date) + 'J';
+    document.getElementById('stat-next-race-name').textContent = next.name;
+  }
+}
+
+function initWeekPlanning() {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+  const days = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
+  let html = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const isToday = d.toDateString() === today.toDateString();
+    const plan = WEEK_PLAN[i];
+    html += `
+      <div class="day-card ${isToday ? 'today' : ''}">
+        <div class="day-label">${days[i]}</div>
+        <div class="day-num" style="${isToday ? 'color:var(--accent)' : ''}">${d.getDate()}</div>
+        <div class="day-tag tag-${plan.tag}">${plan.label}</div>
+      </div>`;
+  }
+
+  const el1 = document.getElementById('week-planning');
+  const el2 = document.getElementById('week-planning-full');
+  if (el1) el1.innerHTML = html;
+  if (el2) el2.innerHTML = html;
+}
+
+function showSection(name) {
+  ['dashboard', 'chat', 'planning'].forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el) el.style.display = s === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if (name === 'planning') initWeekPlanning();
+}
+
+function updateSleep() {
+  const val = document.getElementById('sleep-input').value;
+  if (val) {
+    document.getElementById('stat-sleep').textContent = val;
+    document.getElementById('sleep-input').value = '';
+  }
+}
+
+function updateMotiv() {
+  const val = document.getElementById('motiv-input').value;
+  if (val) {
+    document.getElementById('stat-motivation').textContent = val;
+    document.getElementById('motiv-input').value = '';
+  }
+}
+
+async function analyzeNutrition() {
+  const input = document.getElementById('nutrition-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  document.getElementById('nutrition-feedback').textContent = 'Analyse en cours...';
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Analyse ma nutrition : ' + text + '. Donne moi une note /10 et les macros estimés en grammes (protéines, glucides, lipides). Format: NOTE:X PROT:Xg CARBS:Xg FAT:Xg FEEDBACK:texte court' })
+    });
+    const data = await response.text();
+    parseNutrition(data);
+  } catch (e) {
+    document.getElementById('nutrition-feedback').textContent = 'Erreur de connexion à JARVIS.';
+  }
+  input.value = '';
+}
+
+function parseNutrition(text) {
+  const noteMatch = text.match(/NOTE:(\d+)/);
+  const protMatch = text.match(/PROT:(\d+)/);
+  const carbsMatch = text.match(/CARBS:(\d+)/);
+  const fatMatch = text.match(/FAT:(\d+)/);
+  const feedbackMatch = text.match(/FEEDBACK:(.+)/);
+
+  if (noteMatch) {
+    const note = noteMatch[1];
+    document.getElementById('nutrition-circle').textContent = note;
+    document.getElementById('stat-nutrition').textContent = note + '/10';
+  }
+  if (protMatch) { document.getElementById('val-prot').textContent = protMatch[1] + 'g'; document.getElementById('bar-prot').style.width = Math.min(100, protMatch[1] / 2) + '%'; }
+  if (carbsMatch) { document.getElementById('val-carbs').textContent = carbsMatch[1] + 'g'; document.getElementById('bar-carbs').style.width = Math.min(100, carbsMatch[1] / 4) + '%'; }
+  if (fatMatch) { document.getElementById('val-fat').textContent = fatMatch[1] + 'g'; document.getElementById('bar-fat').style.width = Math.min(100, fatMatch[1] / 1.5) + '%'; }
+  if (feedbackMatch) document.getElementById('nutrition-feedback').textContent = feedbackMatch[1];
+}
+
+let chatHistory = [];
+let isLoading = false;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+}
+
+function sendQuick(text) {
+  showSection('chat');
+  setTimeout(() => {
+    document.getElementById('chat-input').value = text;
+    sendChatMessage();
+  }, 100);
+}
+
+function addChatMsg(role, content) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'user' : 'jarvis');
+  div.innerHTML = `<div class="msg-avatar">${role === 'user' ? 'UL' : 'JV'}</div><div class="msg-bubble"><p>${content.replace(/\n/g, '</p><p>')}</p></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg jarvis';
+  div.id = 'typing-ind';
+  div.innerHTML = `<div class="msg-avatar">JV</div><div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendChatMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+
+  addChatMsg('user', text);
+  addTyping();
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const reply = await response.text();
+    document.getElementById('typing-ind')?.remove();
+    addChatMsg('jarvis', reply);
+  } catch (e) {
+    document.getElementById('typing-ind')?.remove();
+    addChatMsg('jarvis', 'Erreur de connexion. Vérifie que Make est actif.');
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+initDate();
+initRaces();
+initWeekPlanning();
+</script>
+
+
+</body></html>
