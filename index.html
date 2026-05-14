@@ -226,8 +226,8 @@
 </div>
 
 <script>
-const API_KEY = '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';
-
+const API_KEY = localStorage.getItem('jarvis_key') || '';
+  
 const SYSTEM = `Tu es JARVIS, le coach personnel d'Ulysse. Tu es direct, technique, honnête, sans emojis, sans titres markdown. Tu parles comme un préparateur physique de haut niveau qui connaît Ulysse depuis des années. Réponds toujours en français.
 
 Profil : 22 ans. Semi 1h22, 10 km 37', VO2 max 61, FTP 195W. Profil hybride endurance/performance, fort mentalement, récupère vite, tendance à aller trop vite.
